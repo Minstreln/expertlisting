@@ -2,6 +2,9 @@
 
 A property listings REST API built for Expert Listing Limited, a Nigerian proptech platform.
 
+**Live API:** https://expertlisting-kccx.onrender.com  
+**Swagger UI:** https://expertlisting-kccx.onrender.com/swagger/
+
 ## Contents
 
 1. [Overview](#overview)
@@ -212,7 +215,7 @@ All endpoints are under the `/api/v1` prefix.
 ### Create a listing
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/listings \
+curl -X POST https://expertlisting-kccx.onrender.com/api/v1/listings \
   -H 'Content-Type: application/json' \
   -d '{
     "title":     "3 Bedroom Flat in Lekki Phase 1",
@@ -247,13 +250,13 @@ curl -X POST http://localhost:8080/api/v1/listings \
 ### Get a listing
 
 ```bash
-curl http://localhost:8080/api/v1/listings/b5a2c0e1-...
+curl https://expertlisting-kccx.onrender.com/api/v1/listings/b5a2c0e1-...
 ```
 
 ### Update a listing (partial)
 
 ```bash
-curl -X PATCH http://localhost:8080/api/v1/listings/b5a2c0e1-... \
+curl -X PATCH https://expertlisting-kccx.onrender.com/api/v1/listings/b5a2c0e1-... \
   -H 'Content-Type: application/json' \
   -d '{"price": 2800000, "type": "sale"}'
 ```
@@ -261,7 +264,7 @@ curl -X PATCH http://localhost:8080/api/v1/listings/b5a2c0e1-... \
 ### Delete a listing
 
 ```bash
-curl -X DELETE http://localhost:8080/api/v1/listings/b5a2c0e1-...
+curl -X DELETE https://expertlisting-kccx.onrender.com/api/v1/listings/b5a2c0e1-...
 ```
 
 ---
@@ -271,13 +274,13 @@ curl -X DELETE http://localhost:8080/api/v1/listings/b5a2c0e1-...
 Start the server and open the Swagger UI in a browser:
 
 ```
-http://localhost:8080/swagger/
+https://expertlisting-kccx.onrender.com/swagger/
 ```
 
 The raw OpenAPI YAML specification is also available at:
 
 ```
-http://localhost:8080/swagger/openapi.yaml
+https://expertlisting-kccx.onrender.com/swagger/openapi.yaml
 ```
 
 The spec is embedded in the binary at build time from `docs/openapi.yaml`.

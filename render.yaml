@@ -2,8 +2,8 @@ services:
   - type: web
     name: expert-listing
     runtime: go
-    buildCommand: go build -o server ./cmd/api
-    startCommand: ./server
+    buildCommand: go build -tags netgo -ldflags '-s -w' -o app ./cmd/api
+    startCommand: ./app
     envVars:
       - key: DATABASE_URL
         sync: false
