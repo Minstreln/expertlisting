@@ -1,0 +1,454 @@
+openapi: 3.0.3
+
+info:
+  title: Expert Listing API
+  description: |
+    A property listings API for Expert Listing Limited, a Nigerian proptech platform.
+
+    Supports CRUD operations on property listings with full-text filtering,
+    price and bedroom filtering, and geospatial radius search using the
+    Haversine formula computed inside PostgreSQL.
+  version: 1.0.0
+  contact:
+    name: Expert Listing Limited
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Listings
+    description: Property listing management and search
+
+paths:
+  /api/v1/listings:
+    post:
+      tags: [Listings]
+      summary: Create a listing
+      description: Creates a new property listing with the supplied fields.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListingRequest'
+            example:
+              title: "3 Bedroom Flat in Lekki Phase 1"
+              price: 2500000
+              type: rent
+              bedrooms: 3
+              latitude: 6.4281
+              longitude: 3.4219
+              agent_id: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '201':
+          description: Listing created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleListingResponse'
+        '400':
+          description: Validation error or malformed JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation:
+                  value:
+                    error:
+                      code: VALIDATION_ERROR
+                      message: validation failed
+                      details:
+                        type: "must be one of: rent, sale, shortlet"
+                        price: "must be >= 0"
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags: [Listings]
+      summary: List and search listings
+      description: |
+        Returns a paginated list of listings. All filter parameters are optional
+        and can be combined freely.
+
+        **Geospatial search** — supply `lat`, `lng`, and `radius` together to
+        filter listings within that radius. The Haversine distance is returned
+        in the `distance_km` field and results are ordered nearest-first.
+        Omitting all three disables geo search.
+      parameters:
+        - name: type
+          in: query
+          description: Filter by property type
+          schema:
+            $ref: '#/components/schemas/PropertyType'
+        - name: min_price
+          in: query
+          description: Minimum price (inclusive)
+          schema:
+            type: number
+            minimum: 0
+            example: 500000
+        - name: max_price
+          in: query
+          description: Maximum price (inclusive)
+          schema:
+            type: number
+            minimum: 0
+            example: 5000000
+        - name: bedrooms
+          in: query
+          description: Exact bedroom count
+          schema:
+            type: integer
+            minimum: 0
+            example: 3
+        - name: lat
+          in: query
+          description: Latitude of the search origin (requires lng and radius)
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+            example: 6.5244
+        - name: lng
+          in: query
+          description: Longitude of the search origin (requires lat and radius)
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+            example: 3.3792
+        - name: radius
+          in: query
+          description: Search radius in kilometres (requires lat and lng)
+          schema:
+            type: number
+            exclusiveMinimum: 0
+            example: 10
+        - name: page
+          in: query
+          description: Page number (default 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Results per page (default 20, max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of listings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingsResponse'
+        '400':
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_geo:
+                  value:
+                    error:
+                      code: VALIDATION_ERROR
+                      message: invalid query parameters
+                      details:
+                        geo: "lat, lng and radius must all be provided together"
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/listings/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Listing UUID
+        schema:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440001"
+
+    get:
+      tags: [Listings]
+      summary: Get a listing by ID
+      responses:
+        '200':
+          description: Listing found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleListingResponse'
+        '400':
+          $ref: '#/components/responses/InvalidID'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    patch:
+      tags: [Listings]
+      summary: Partially update a listing
+      description: Updates only the fields included in the request body.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateListingRequest'
+            example:
+              price: 2800000
+              type: sale
+      responses:
+        '200':
+          description: Listing updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleListingResponse'
+        '400':
+          description: Validation error, malformed JSON, or no fields supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags: [Listings]
+      summary: Delete a listing
+      responses:
+        '200':
+          description: Listing deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: listing deleted
+        '400':
+          $ref: '#/components/responses/InvalidID'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    PropertyType:
+      type: string
+      enum: [rent, sale, shortlet]
+      description: The category of the property listing
+
+    Listing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "3 Bedroom Flat in Lekki Phase 1"
+        price:
+          type: number
+          example: 2500000
+        type:
+          $ref: '#/components/schemas/PropertyType'
+        bedrooms:
+          type: integer
+          example: 3
+        latitude:
+          type: number
+          example: 6.4281
+        longitude:
+          type: number
+          example: 3.4219
+        agent_id:
+          type: string
+          format: uuid
+        image_url:
+          type: string
+          nullable: true
+          example: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ListingWithDistance:
+      allOf:
+        - $ref: '#/components/schemas/Listing'
+        - type: object
+          properties:
+            distance_km:
+              type: number
+              nullable: true
+              description: |
+                Great-circle distance in kilometres from the search origin.
+                Present only when lat, lng and radius were supplied.
+              example: 4.82
+
+    CreateListingRequest:
+      type: object
+      required: [title, price, type, bedrooms, latitude, longitude, agent_id]
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          example: "3 Bedroom Flat in Lekki Phase 1"
+        price:
+          type: number
+          minimum: 0
+          example: 2500000
+        type:
+          $ref: '#/components/schemas/PropertyType'
+        bedrooms:
+          type: integer
+          minimum: 0
+          example: 3
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          example: 6.4281
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          example: 3.4219
+        agent_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        image_url:
+          type: string
+          example: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6"
+
+    UpdateListingRequest:
+      type: object
+      description: All fields are optional. Only supplied fields are updated.
+      properties:
+        title:
+          type: string
+          maxLength: 255
+        price:
+          type: number
+          minimum: 0
+        type:
+          $ref: '#/components/schemas/PropertyType'
+        bedrooms:
+          type: integer
+          minimum: 0
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+        agent_id:
+          type: string
+          format: uuid
+        image_url:
+          type: string
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 125
+        total_pages:
+          type: integer
+          example: 7
+
+    SingleListingResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Listing'
+
+    ListingsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListingWithDistance'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: validation failed
+            details:
+              type: object
+              additionalProperties:
+                type: string
+              example:
+                title: "required"
+                type: "must be one of: rent, sale, shortlet"
+
+  responses:
+    NotFound:
+      description: Listing not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: NOT_FOUND
+              message: listing not found
+
+    InvalidID:
+      description: The path parameter is not a valid UUID
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: INVALID_ID
+              message: id must be a valid UUID
+
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: INTERNAL_ERROR
+              message: internal server error

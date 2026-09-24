@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: expert-listing
+    runtime: go
+    buildCommand: go build -o server ./cmd/api
+    startCommand: ./server
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: APP_ENV
+        value: production
