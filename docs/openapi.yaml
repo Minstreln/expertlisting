@@ -15,8 +15,6 @@ info:
 servers:
   - url: https://expertlisting-kccx.onrender.com
     description: Production server
-  - url: http://localhost:8080
-    description: Local development server
 
 tags:
   - name: Listings
