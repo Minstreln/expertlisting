@@ -8,32 +8,57 @@ A property listings REST API built for Expert Listing Limited, a Nigerian propte
 ## Contents
 
 1. [Overview](#overview)
-2. [Requirements](#requirements)
-3. [Technology choices](#technology-choices)
-4. [Architecture](#architecture)
-5. [PostgreSQL setup](#postgresql-setup)
-6. [Environment variables](#environment-variables)
-7. [Running migrations](#running-migrations)
-8. [Running locally](#running-locally)
-9. [Running tests](#running-tests)
-10. [API endpoints](#api-endpoints)
-11. [Swagger / OpenAPI documentation](#swagger--openapi-documentation)
-12. [Search and filtering](#search-and-filtering)
-13. [Geospatial search](#geospatial-search)
-14. [Pagination](#pagination)
-15. [Error handling](#error-handling)
-16. [Database indexes](#database-indexes)
-17. [Design decisions](#design-decisions)
-18. [Trade-offs](#trade-offs)
-19. [What I would improve with more time](#what-i-would-improve-with-more-time)
+2. [Relevant PropTech Experience](#relevant-proptech-experience)
+3. [Requirements](#requirements)
+4. [Technology choices](#technology-choices)
+5. [Architecture](#architecture)
+6. [PostgreSQL setup](#postgresql-setup)
+7. [Environment variables](#environment-variables)
+8. [Running migrations](#running-migrations)
+9. [Running locally](#running-locally)
+10. [Running tests](#running-tests)
+11. [API endpoints](#api-endpoints)
+12. [Swagger / OpenAPI documentation](#swagger--openapi-documentation)
+13. [Search and filtering](#search-and-filtering)
+14. [Geospatial search](#geospatial-search)
+15. [Pagination](#pagination)
+16. [Error handling](#error-handling)
+17. [Database indexes](#database-indexes)
+18. [Design decisions](#design-decisions)
+19. [Trade-offs](#trade-offs)
+20. [What I would improve with more time](#what-i-would-improve-with-more-time)
 
 ---
 
 ## Overview
 
-Implements CRUD operations for property listings, full-text filtering by type,
-price, and bedroom count, geospatial radius search using the Haversine formula
-computed in PostgreSQL, and standard pagination.
+I am the Founder and Backend Engineer behind [OffCampus.ng](https://offcampus.ng), a student housing marketplace I built to help students discover, compare, verify, and connect with property agents and landlords. Building OffCampus.ng has given me practical experience working on marketplace workflows, property listings, search, location-based discovery, agent interactions, and the backend systems that support them.
+
+This assessment focuses on a smaller, self-contained version of a property listing backend, covering listing CRUD operations, filtering, pagination, geospatial search, validation, error handling, testing, and API documentation.
+
+The implementation is intentionally scoped to the requirements of the assessment while applying production-minded backend engineering practices.
+
+---
+
+## Relevant PropTech Experience
+
+**OffCampus.ng — Founder & Backend Engineer**
+
+OffCampus.ng is a student housing marketplace focused on helping students discover and compare verified accommodation listings and connect directly with property agents and owners.
+
+I designed and built the platform and have worked on areas including:
+
+- Property listing management
+- Property search and filtering
+- Location-based property discovery
+- Agent and property-owner workflows
+- Listing verification
+- Student-to-agent/owner enquiries
+- Marketplace analytics
+- Backend API development
+- Database design and query handling
+
+The experience of building and operating a property marketplace informed some of the design considerations in this assessment, particularly around listings, search, location, filtering, and scalability.
 
 ---
 
